@@ -7,9 +7,7 @@ SearXNG-backed search provider plugin for [DeepSeek Harness](https://github.com/
 
 Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search` model tool routes through your [SearXNG](https://github.com/searxng/searxng) instance. No auth, no API key, no model calls — just a plain HTTP GET against SearXNG's JSON endpoint.
 
-## Status
-
-⚠️ **Not yet published to npm.** The CI/CD workflow builds on every push and publishes automatically when a `v*` tag is pushed. Once the first release is cut:
+## Install
 
 ```bash
 npm install @jaco-tech/dsh-web-search-searxng
