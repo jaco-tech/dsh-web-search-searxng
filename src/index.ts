@@ -188,7 +188,7 @@ const Config = z.object({
   timeRange: z.string().default(""),
 });
 
-function apply(ctx: { web: { registerSearchProvider: (p: WebSearchProvider) => void } }, config: z.infer<typeof Config>): void {
+function apply(ctx: { web: { registerSearchProvider: (p: WebSearchProvider) => void } }, config: typeof Config): void {
   const current = () => config;
   ctx.web.registerSearchProvider(new SearXngSearchProvider(() => current()));
 }
