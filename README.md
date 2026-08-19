@@ -1,12 +1,15 @@
 # dsh-web-search-searxng
 
 [![dsh-plugin](https://img.shields.io/badge/dsh-plugin-blue)](https://github.com/topics/dsh-plugin)
+[![CI/CD](https://github.com/jaco-tech/dsh-web-search-searxng/actions/workflows/ci.yml/badge.svg)](https://github.com/jaco-tech/dsh-web-search-searxng/actions/workflows/ci.yml)
 
 SearXNG-backed search provider plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
 Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search` model tool routes through your [SearXNG](https://github.com/searxng/searxng) instance. No auth, no API key, no model calls — just a plain HTTP GET against SearXNG's JSON endpoint.
 
-## Install
+## Status
+
+⚠️ **Not yet published to npm.** The CI/CD workflow builds on every push and publishes automatically when a `v*` tag is pushed. Once the first release is cut:
 
 ```bash
 npm install @jaco-tech/dsh-web-search-searxng
@@ -70,14 +73,22 @@ The existing `@deepseek-ai/dsh-tool-web` consumer calls `ctx.web.search()` — y
 
 This plugin communicates with [SearXNG](https://github.com/searxng/searxng) via its JSON API (`/search?format=json`). SearXNG is a free internet metasearch engine which aggregates results from more than 70 search services. You need a running SearXNG instance to use this plugin.
 
+## Release process
+
+```bash
+# Tag and push — the CI workflow builds and publishes to npm automatically
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Requires the `NPM_TOKEN` secret to be set in the repository.
+
 ## Development
 
 ```bash
 npm install
 npm run build
 ```
-
-Published to npm as `@jaco-tech/dsh-web-search-searxng`.
 
 ## License
 
