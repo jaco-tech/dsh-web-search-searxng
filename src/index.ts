@@ -1,5 +1,6 @@
 import z from "@deepseek-ai/schemastery";
 import { WebError } from "@deepseek-ai/dsh-web";
+import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
 import type { Context } from "@deepseek-ai/cordis";
 import type { WebSearchProvider, WebSearchRequest, WebSearchResult } from "@deepseek-ai/dsh-web";
 
@@ -186,8 +187,15 @@ const Config = z.object({
   timeRange: z.string().default(""),
 }) as unknown as z<Config>;
 
+/** Settings namespace for the DSH Web UI (Settings → Plugins). */
+const WEB_SEARCH_SEARXNG_SETTINGS_NAMESPACE = settingsNamespace("web-search-searxng");
+
 function apply(ctx: Context, config: Config): void {
-  const current = () => config;
+  let current = () => config;
+  installSettingsSection(ctx, WEB_SEARCH_SEARXNG_SETTINGS_NAMESPACE, Config, config, {
+    setSource: (source) => { current = source; },
+    onChange: () => {},
+  });
   ctx.web.registerSearchProvider(new SearXngSearchProvider(() => current()));
 }
 //#endregion
