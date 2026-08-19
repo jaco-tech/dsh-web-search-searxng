@@ -78,10 +78,10 @@ function mapSearXngResponse(body: SearXngResponseBody, maxResults?: number): Web
  * seam's normalized `WebSearchResult`. No auth, no API key, no model calls.
  */
 class SearXngSearchProvider implements WebSearchProvider {
-  readonly resolveOptions: () => { baseURL: string; language: string; categories: string; timeRange: string };
+  readonly resolveOptions: () => Config;
   readonly id = SEARXNG_PROVIDER_ID;
 
-  constructor(resolveOptions: () => { baseURL: string; language: string; categories: string; timeRange: string }) {
+  constructor(resolveOptions: () => Config) {
     this.resolveOptions = resolveOptions;
   }
 
