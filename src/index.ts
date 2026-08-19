@@ -77,10 +77,10 @@ function mapSearXngResponse(body: SearXngResponseBody, maxResults?: number): Web
  * seam's normalized `WebSearchResult`. No auth, no API key, no model calls.
  */
 class SearXngSearchProvider implements WebSearchProvider {
-  private readonly resolveOptions: () => SearXngSearchProviderOptions;
+  readonly resolveOptions: () => { baseURL: string; language: string; categories: string; timeRange: string };
   readonly id = SEARXNG_PROVIDER_ID;
 
-  constructor(resolveOptions: () => SearXngSearchProviderOptions) {
+  constructor(resolveOptions: () => { baseURL: string; language: string; categories: string; timeRange: string }) {
     this.resolveOptions = resolveOptions;
   }
 
@@ -137,16 +137,6 @@ class SearXngSearchProvider implements WebSearchProvider {
   }
 }
 
-export interface SearXngSearchProviderOptions {
-  /** SearXNG base URL (without /search suffix). Must be set to your instance. */
-  baseURL: string;
-  /** Optional language filter (e.g. "en", "nl", "fr"). */
-  language?: string;
-  /** Optional categories filter (e.g. "general", "news", "images"). */
-  categories?: string;
-  /** Optional time range filter (e.g. "day", "week", "month", "year"). */
-  timeRange?: string;
-}
 //#endregion
 
 //#region plugin
@@ -188,7 +178,7 @@ const Config = z.object({
   timeRange: z.string().default(""),
 });
 
-function apply(ctx: { web: { registerSearchProvider: (p: WebSearchProvider) => void } }, config: typeof Config): void {
+function apply(ctx, config) {
   const current = () => config;
   ctx.web.registerSearchProvider(new SearXngSearchProvider(() => current()));
 }
