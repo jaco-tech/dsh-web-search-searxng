@@ -15,13 +15,22 @@ npm install @jaco-tech/dsh-web-search-searxng
 
 ## Configure
 
-Add to your DSH profile's `cordis.patch.yml`:
+### 1. Install the package
+
+```bash
+npm install @jaco-tech/dsh-web-search-searxng
+```
+
+### 2. Add it to your DSH profile
+
+Edit `~/.dsh/profiles/web/cordis.patch.yml` (create it if it doesn't exist) and add:
 
 ```yaml
 - insert:
     - id: web-search-searxng
       name: '@jaco-tech/dsh-web-search-searxng'
       config:
+        # Required: point at your SearXNG instance
         baseURL: 'http://your-searxng-instance:8888'
         # Optional filters:
         language: 'en'
@@ -29,7 +38,7 @@ Add to your DSH profile's `cordis.patch.yml`:
         timeRange: ''
 ```
 
-Optionally pin `ctx.web` to use this provider explicitly:
+If you have multiple search providers registered, pin `ctx.web` to use this one:
 
 ```yaml
 - replace:
@@ -37,6 +46,20 @@ Optionally pin `ctx.web` to use this provider explicitly:
       config:
         searchProvider: searxng
 ```
+
+### 3. Restart DSH
+
+Stop your running `dsh` process and start it again:
+
+```bash
+npx @deepseek-ai/dsh web
+```
+
+The plugin will be loaded automatically. The `web_search` tool in your agent will now use your SearXNG instance.
+
+### 4. (Optional) Configure via the Web UI
+
+Once DSH is running, go to **Settings → Plugins** in the Web UI. You'll see a "web-search-searxng" card where you can edit the `baseURL` and filter settings without editing YAML files.
 
 ## How it works
 
