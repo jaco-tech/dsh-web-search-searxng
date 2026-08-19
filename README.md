@@ -4,7 +4,7 @@
 
 SearXNG-backed search provider plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
-Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search` model tool routes through your SearXNG instance. No auth, no API key, no model calls — just a plain HTTP GET against SearXNG's JSON endpoint.
+Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search` model tool routes through your [SearXNG](https://github.com/searxng/searxng) instance. No auth, no API key, no model calls — just a plain HTTP GET against SearXNG's JSON endpoint.
 
 ## Install
 
@@ -65,6 +65,10 @@ The existing `@deepseek-ai/dsh-tool-web` consumer calls `ctx.web.search()` — y
 |---|---|
 | `available()` | Returns `true` when `baseURL` is a valid URL |
 | `search(request, signal?)` | `GET /search` with `q`, `format=json`, optional `language`/`categories`/`time_range` params. Dedupes results by URL. Surfaces `answers` and `infoboxes` as provider-generated answer text. |
+
+## Upstream
+
+This plugin communicates with [SearXNG](https://github.com/searxng/searxng) via its JSON API (`/search?format=json`). SearXNG is a free internet metasearch engine which aggregates results from more than 70 search services. You need a running SearXNG instance to use this plugin.
 
 ## Development
 
