@@ -1,5 +1,6 @@
 import z from "@deepseek-ai/schemastery";
 import { WebError } from "@deepseek-ai/dsh-web";
+import type { Context } from "@deepseek-ai/cordis";
 import type { WebSearchProvider, WebSearchRequest, WebSearchResult } from "@deepseek-ai/dsh-web";
 
 //#region SearXNG JSON response types
@@ -164,21 +165,28 @@ const name = "web-search-searxng";
 /** The web seam this provider registers into. */
 const inject = ["web"];
 
-const Config = z.object({
-  /**
-   * Base URL of the SearXNG instance (without trailing /search).
-   * Required — no default, you must configure your instance URL.
-   */
-  baseURL: z.string().required(),
-  /** Language filter passed to SearXNG (e.g. "en", "nl", "fr"). Empty = no filter. */
-  language: z.string().default(""),
+/**
+ * Plugin configuration. `baseURL` is required (point at your SearXNG instance).
+ */
+interface Config {
+  /** Base URL of the SearXNG instance (without trailing /search). */
+  baseURL: string;
+  /** Language filter (e.g. "en", "nl", "fr"). Empty = no filter. */
+  language?: string;
   /** Categories filter (e.g. "general", "news", "images"). Empty = no filter. */
-  categories: z.string().default(""),
+  categories?: string;
   /** Time range filter (e.g. "day", "week", "month", "year"). Empty = no filter. */
-  timeRange: z.string().default(""),
-});
+  timeRange?: string;
+}
 
-function apply(ctx, config) {
+const Config = z.object({
+  baseURL: z.string().required(),
+  language: z.string().default(""),
+  categories: z.string().default(""),
+  timeRange: z.string().default(""),
+}) as unknown as z<Config>;
+
+function apply(ctx: Context, config: Config): void {
   const current = () => config;
   ctx.web.registerSearchProvider(new SearXngSearchProvider(() => current()));
 }
