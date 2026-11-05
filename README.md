@@ -13,8 +13,14 @@ Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search`
 npm install @jaco-tech/dsh-web-search-searxng
 ```
 
-Requires DeepSeek Harness **0.2.x** (`@deepseek-ai/dsh-web` 0.2.0-rc.x or 0.2.1-rc.5+,
-`@deepseek-ai/cordis` ~4.0.5). Use 0.1.x of this plugin with DSH 0.1.x.
+Requires DeepSeek Harness 0.2.1-rc.5. The tested DSH dependency set pins
+`@deepseek-ai/dsh-web` and `@deepseek-ai/dsh-settings` exactly at `0.2.1-rc.5`.
+`@deepseek-ai/cordis` is the deliberate exception: like the first-party DSH web plugins,
+this package declares the compatible patch range `~4.0.5`. A consumer lockfile could in
+principle resolve a different 4.0.x cordis patch and create a second framework copy; this
+plugin's one-shot install is verified against cordis 4.0.5. Every DSH bump therefore needs
+a release of this package with its framework peers re-pinned (`test/peer-pins.test.mjs`
+enforces their presence and pin form). Use 0.1.x of this plugin with DSH 0.1.x.
 
 ## Configure
 
@@ -116,6 +122,24 @@ npm install
 npm run build
 npm test      # hermetic: loads lib/ into a real cordis Context next to dsh-web's ctx.web
 ```
+
+Verify a one-shot scratch install of DSH plus this package's `npm pack` tarball:
+
+```bash
+repo=$PWD
+scratch=$(mktemp -d)
+tarball=$(npm pack --pack-destination "$scratch" --silent)
+printf '%s\n' \
+  "{\"private\":true,\"dependencies\":{\"@deepseek-ai/dsh\":\"0.2.1-rc.5\",\"@jaco-tech/dsh-web-search-searxng\":\"file:./$tarball\"}}" \
+  > "$scratch/package.json"
+(cd "$scratch" && npm install --no-audit --no-fund)
+node "$repo/test/installed-tree-identity.mjs" "$scratch"
+```
+
+The final check is hermetic (it only reads the installed tree). It requires exactly one
+installed copy each of `@deepseek-ai/dsh-web`,
+`@deepseek-ai/dsh-settings`, and `@deepseek-ai/cordis`, and requires
+`@deepseek-ai/cordis-plugin-group` to be present.
 
 ## License
 
