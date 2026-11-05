@@ -13,6 +13,9 @@ Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search`
 npm install @jaco-tech/dsh-web-search-searxng
 ```
 
+Requires DeepSeek Harness **0.2.x** (`@deepseek-ai/dsh-web` 0.2.0-rc.x or 0.2.1-rc.5+,
+`@deepseek-ai/cordis` ~4.0.5). Use 0.1.x of this plugin with DSH 0.1.x.
+
 ## Configure
 
 ### 1. Install the package
@@ -61,6 +64,8 @@ The plugin will be loaded automatically. The `web_search` tool in your agent wil
 
 Once DSH is running, go to **Settings → Plugins** in the Web UI. You'll see a "web-search-searxng" card where you can edit the `baseURL` and filter settings without editing YAML files.
 
+Every config field is volatile (DSH 0.2 settings model): a change is committed into the running plugin and the next search reads it, without reloading the plugin.
+
 ## How it works
 
 This is a [Cordis](https://github.com/cordiverse/cordis) plugin that implements the `WebSearchProvider` interface from `@deepseek-ai/dsh-web`:
@@ -72,7 +77,7 @@ export const inject = ["web"]
 export function apply(ctx, config) {
   ctx.web.registerSearchProvider({
     id: "searxng",
-    available() { /* URL.canParse(config.baseURL) */ },
+    available() { /* URL.canParse(config.baseURL.get()) */ },
     async search(request, signal) {
       // GET /search?q=<query>&format=json
       // maps response to WebSearchResult
@@ -109,6 +114,7 @@ Requires the `NPM_TOKEN` secret to be set in the repository.
 ```bash
 npm install
 npm run build
+npm test      # hermetic: loads lib/ into a real cordis Context next to dsh-web's ctx.web
 ```
 
 ## License
