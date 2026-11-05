@@ -42,6 +42,7 @@ Before opening a PR, make sure:
 ```bash
 npm install
 npm run build     # TypeScript compilation
+npm test          # hermetic load/smoke test against the DSH 0.2 runtime
 ```
 
 The CI runs the same check across Node 22, 24, and 26. All three must pass before a PR can merge.

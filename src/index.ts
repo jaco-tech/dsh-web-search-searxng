@@ -1,7 +1,6 @@
 import z from "@deepseek-ai/schemastery";
 import { WebError } from "@deepseek-ai/dsh-web";
-import { installSettingsSection, settingsNamespace } from "@deepseek-ai/dsh-settings";
-import type { Context } from "@deepseek-ai/cordis";
+import type { Context, Volatile } from "@deepseek-ai/cordis";
 import type { WebSearchProvider, WebSearchRequest, WebSearchResult } from "@deepseek-ai/dsh-web";
 
 //#region SearXNG JSON response types
@@ -79,10 +78,15 @@ function mapSearXngResponse(body: SearXngResponseBody, maxResults?: number): Web
  * seam's normalized `WebSearchResult`. No auth, no API key, no model calls.
  */
 class SearXngSearchProvider implements WebSearchProvider {
-  readonly resolveOptions: () => Config;
+  readonly resolveOptions: () => SearXngOptions;
   readonly id = SEARXNG_PROVIDER_ID;
 
-  constructor(resolveOptions: () => Config) {
+  /**
+   * @param resolveOptions - the options for the NEXT operation, snapshotted
+   * once at each operation's entry, so a settings change applies to the next
+   * search without re-registering the provider.
+   */
+  constructor(resolveOptions: () => SearXngOptions) {
     this.resolveOptions = resolveOptions;
   }
 
@@ -166,37 +170,48 @@ const name = "web-search-searxng";
 /** The web seam this provider registers into. */
 const inject = ["web"];
 
-/**
- * Plugin configuration. `baseURL` is required (point at your SearXNG instance).
- */
-interface Config {
+/** One search's resolved options. */
+interface SearXngOptions {
   /** Base URL of the SearXNG instance (without trailing /search). */
   baseURL: string;
   /** Language filter (e.g. "en", "nl", "fr"). Empty = no filter. */
-  language?: string;
+  language: string;
   /** Categories filter (e.g. "general", "news", "images"). Empty = no filter. */
-  categories?: string;
+  categories: string;
   /** Time range filter (e.g. "day", "week", "month", "year"). Empty = no filter. */
-  timeRange?: string;
+  timeRange: string;
+}
+
+/**
+ * Plugin configuration. `baseURL` is required (point at your SearXNG instance).
+ * Every field is volatile: DSH commits a settings change into the running
+ * plugin, and the next search reads it.
+ */
+interface Config {
+  /** Base URL of the SearXNG instance (without trailing /search). */
+  baseURL: Volatile<string>;
+  /** Language filter (e.g. "en", "nl", "fr"). Empty = no filter. */
+  language: Volatile<string>;
+  /** Categories filter (e.g. "general", "news", "images"). Empty = no filter. */
+  categories: Volatile<string>;
+  /** Time range filter (e.g. "day", "week", "month", "year"). Empty = no filter. */
+  timeRange: Volatile<string>;
 }
 
 const Config = z.object({
-  baseURL: z.string().required(),
-  language: z.string().default(""),
-  categories: z.string().default(""),
-  timeRange: z.string().default(""),
-}) as unknown as z<Config>;
-
-/** Settings namespace for the DSH Web UI (Settings → Plugins). */
-const WEB_SEARCH_SEARXNG_SETTINGS_NAMESPACE = settingsNamespace("web-search-searxng");
+  baseURL: z.string().required().volatile(),
+  language: z.string().default("").volatile(),
+  categories: z.string().default("").volatile(),
+  timeRange: z.string().default("").volatile(),
+});
 
 function apply(ctx: Context, config: Config): void {
-  let current = () => config;
-  installSettingsSection(ctx, WEB_SEARCH_SEARXNG_SETTINGS_NAMESPACE, Config, config, {
-    setSource: (source) => { current = source; },
-    onChange: () => {},
-  });
-  ctx.web.registerSearchProvider(new SearXngSearchProvider(() => current()));
+  ctx.web.registerSearchProvider(new SearXngSearchProvider(() => ({
+    baseURL: config.baseURL.get(),
+    language: config.language.get(),
+    categories: config.categories.get(),
+    timeRange: config.timeRange.get(),
+  })));
 }
 //#endregion
 
@@ -214,4 +229,5 @@ function isAbortError(error: unknown): boolean {
 }
 //#endregion
 
+export type { SearXngOptions };
 export { Config, SEARXNG_PROVIDER_ID, SearXngSearchProvider, apply, inject, name, mapSearXngResponse };
