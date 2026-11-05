@@ -1,12 +1,12 @@
-// Hermetic guard: every @deepseek-ai/* peer must be an exact pin, equal to the
-// devDependency the tests run against. No network, reads package.json only.
+// Hermetic guard: both framework peers must be declared, use the required pin
+// form (exact for dsh-web, first-party-compatible ~X.Y.Z for cordis), and equal
+// the devDependency the tests run against. No network, reads package.json only.
 //
-// Why: a peer range that admits two versions lets npm pick the highest it can
-// find and install it beside DSH's own copy. A second @deepseek-ai/dsh-web or
-// @deepseek-ai/cordis shadows the framework the plugin is loaded into (two
-// Context classes, two service registries) and can break plugin loading.
-// The first-party DSH plugins pin exactly for the same reason; an exact pin
-// gives npm one candidate, so it can only dedupe onto DSH's copy.
+// Why: an overly broad peer range lets npm install another framework copy beside
+// DSH's own. A second @deepseek-ai/dsh-web or @deepseek-ai/cordis shadows the
+// framework the plugin is loaded into (two Context classes, two service
+// registries) and can break plugin loading. The installed-tree verification
+// separately measures whether the allowed cordis patch range dedupes in practice.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -21,14 +21,17 @@ const WHY =
   "a range lets npm install a second copy of dsh-web/cordis beside DSH's own, " +
   "which shadows the framework and can break plugin loading";
 
-const peers = Object.entries(pkg.peerDependencies ?? {}).filter(([name]) => name.startsWith(SCOPE));
+const peerDependencies = pkg.peerDependencies ?? {};
+const peers = Object.entries(peerDependencies).filter(([name]) => name.startsWith(SCOPE));
 
-test("there are @deepseek-ai peers to check", () => {
-  assert.ok(peers.length > 0, "no @deepseek-ai/* peerDependencies found");
+test("the framework peers are declared", () => {
+  for (const name of ["@deepseek-ai/dsh-web", "@deepseek-ai/cordis"]) {
+    assert.ok(peerDependencies[name], `${name} must be declared as a peerDependency`);
+  }
 });
 
 for (const [name, spec] of peers) {
-  test(`${name} peer is pinned exactly`, () => {
+  test(`${name} peer uses the required pin form`, () => {
     const bare = TILDE_ALLOWED.has(name) && spec.startsWith("~") ? spec.slice(1) : spec;
     assert.match(
       bare,
@@ -43,7 +46,7 @@ for (const [name, spec] of peers) {
       dev,
       spec,
       `${name} peer "${spec}" differs from devDependencies "${dev}": the tests must run against ` +
-        `the exact version the peer admits, otherwise ${WHY}`,
+        `the same pin form the peer declares, otherwise ${WHY}`,
     );
   });
 }
