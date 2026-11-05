@@ -13,8 +13,10 @@ Registers a `WebSearchProvider` into `ctx.web` so that the existing `web_search`
 npm install @jaco-tech/dsh-web-search-searxng
 ```
 
-Requires DeepSeek Harness **0.2.x** (`@deepseek-ai/dsh-web` 0.2.0-rc.x or 0.2.1-rc.5+,
-`@deepseek-ai/cordis` ~4.0.5). Use 0.1.x of this plugin with DSH 0.1.x.
+Requires DeepSeek Harness **0.2.1-rc.5** (`@deepseek-ai/dsh-web` 0.2.1-rc.5 exactly,
+`@deepseek-ai/cordis` ~4.0.5). The peers are pinned exactly, like DSH's own first-party
+plugins: a range would let npm install a second `dsh-web`/`cordis` beside DSH's and shadow
+it. Use 0.1.x of this plugin with DSH 0.1.x.
 
 ## Configure
 
