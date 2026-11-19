@@ -8,7 +8,7 @@
 import { test, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { Context } from "@deepseek-ai/cordis";
-import { isVolatile, updateVolatile } from "@deepseek-ai/cosmokit";
+import { isVolatile } from "@deepseek-ai/cosmokit";
 import { WebRuntime } from "@deepseek-ai/dsh-web";
 
 const BASE_URL = "http://searxng.test";
@@ -81,13 +81,16 @@ test("registers the searxng provider in ctx.web and serves a search", async () =
   }
 });
 
-test("a live config change reaches the next search without re-registering", async () => {
+test("a live config change reaches the next search", async () => {
   const urls = stubFetch({ query: "q", results: [] });
-  const { ctx, fiber, plugin } = await boot({ baseURL: BASE_URL, language: "en" });
+  const { ctx, fiber } = await boot({ baseURL: BASE_URL, language: "en" });
   try {
-    const next = plugin.Config({ baseURL: "http://other.test", language: "nl" });
-    updateVolatile(fiber.config.baseURL, next.baseURL);
-    updateVolatile(fiber.config.language, next.language);
+    // cordis >= 4.1: fiber.config is the raw input and fiber.update() is the
+    // public path a settings commit takes (the old test wrote the volatile
+    // references through cosmokit's internal updateVolatile). In a bare
+    // Context without DSH's loader the fiber restarts; either way the next
+    // search must use the new values.
+    await fiber.update({ baseURL: "http://other.test", language: "nl" });
     await ctx.web.search({ query: "x" });
     const url = new URL(urls[0]);
     assert.equal(url.origin, "http://other.test");
